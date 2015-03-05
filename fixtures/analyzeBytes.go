@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"text/tabwriter"
 )
 
 func check(err error) {
@@ -56,12 +57,27 @@ func getMapKeys(aMap map[string][]byte) (keys []string) {
 	for key, _ := range aMap {
 		keys = append(keys, key)
 	}
+
 	return
 }
 
+type valueFreqs map[byte]int
+
+func (v valueFreqs) String() string {
+	s := ""
+	for key, freq := range v {
+		s += fmt.Sprintf("%v/%v:%v\t", string(key), key, freq)
+	}
+	return s
+}
+
 type byteDelta struct { // TODO: A less horrible no good very bad name.
-	uniform    bool
-	valueFreqs map[byte]int
+	uniform bool
+	valueFreqs
+}
+
+func (b byteDelta) String() string {
+	return fmt.Sprintf("%v\t%v", b.uniform, b.valueFreqs)
 }
 
 func main() {
@@ -88,11 +104,10 @@ func main() {
 		}
 		byteDeltas[i] = byteDelta
 	}
+	writer := tabwriter.NewWriter(os.Stdout, 8, 8, 8, ' ', 0)
+
 	for i, byteDelta := range byteDeltas {
-		keys := make([]string, len(byteDelta.valueFreqs))
-		for key, _ := range byteDelta.valueFreqs {
-			keys = append(keys, string(key))
-		}
-		fmt.Println(i, byteDelta.uniform, byteDelta.valueFreqs, keys)
+		out := fmt.Sprintf("%v\t%v\t", i, byteDelta)
+		fmt.Fprintln(writer, out)
 	}
 }
