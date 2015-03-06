@@ -30,10 +30,10 @@ func getSpliceFileInfos(path string) (spliceFileInfos []os.FileInfo) {
 	return
 }
 
-func readFiles(fileInfos []os.FileInfo) map[string][]byte {
+func readFiles(path string, fileInfos []os.FileInfo) map[string][]byte {
 	allFiles := make(map[string][]byte, 0)
 	for _, fileInfo := range fileInfos {
-		fileContents, err := ioutil.ReadFile(fileInfo.Name())
+		fileContents, err := ioutil.ReadFile(path + fileInfo.Name())
 		check(err)
 		allFiles[fileInfo.Name()] = fileContents
 	}
@@ -80,10 +80,11 @@ func (b byteDelta) String() string {
 	return fmt.Sprintf("%v\t%v", b.uniform, b.valueFreqs)
 }
 
+// TODO: This is gross to read and too nested, fix it.
 func main() {
-	path := "/home/tasm/go/src/splice/fixtures" // TODO: No hardcoding.
+	path := "/home/tasm/go/src/splice/fixtures/" // TODO: No hardcoding.
 	fileInfos := getSpliceFileInfos(path)
-	allFiles := readFiles(fileInfos)
+	allFiles := readFiles(path, fileInfos)
 	longest, _ := getLongestFileLengthInBytes(allFiles)
 	byteDeltas := make([]byteDelta, longest)
 	fileNames := getMapKeys(allFiles)
@@ -104,7 +105,8 @@ func main() {
 		}
 		byteDeltas[i] = byteDelta
 	}
-	writer := tabwriter.NewWriter(os.Stdout, 8, 8, 8, ' ', 0)
+	numSpaces := 4
+	writer := tabwriter.NewWriter(os.Stdout, numSpaces, numSpaces, numSpaces, ' ', 0)
 
 	for i, byteDelta := range byteDeltas {
 		out := fmt.Sprintf("%v\t%v\t", i, byteDelta)
