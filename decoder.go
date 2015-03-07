@@ -34,7 +34,6 @@ func DecodeFile(path string) (*Pattern, error) {
 		// TODO: Is there no byte this value can be pulled from?
 		p.Tempo = 240
 	case "0.708-alpha":
-		fmt.Println("uhetnashutnseoah")
 		p.Tempo = 999
 	}
 	p.DrumParts, err = readAllDrumParts(reader)
@@ -48,7 +47,6 @@ func readAllDrumParts(r io.Reader) (DrumParts, error) {
 	d := make([]DrumPart, 0)
 	for {
 		drumPart, err := readDrumPart(r)
-		fmt.Printf("%+v : %+v\n", drumPart, err)
 		if err != nil {
 			if err == io.EOF {
 				return d, nil
@@ -92,7 +90,6 @@ func (p Pattern) String() string {
 	h := bytes.Trim(p.Header.HardwareVersion[:], "\x00")
 	i++
 	bpm := fmt.Sprint(p.Tempo)
-	fmt.Println(bpm)
 	if p.TempoDecimal != 0 {
 		// TODO: Is this really the correct way to determine the decimal?
 		bpm = fmt.Sprintf("%v.%v", p.Tempo, p.TempoDecimal)
