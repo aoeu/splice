@@ -84,11 +84,8 @@ func NewPattern() (p *Pattern) {
 	return
 }
 
-var i int = 1
-
 func (p Pattern) String() string {
 	h := bytes.Trim(p.Header.HardwareVersion[:], "\x00")
-	i++
 	bpm := fmt.Sprint(p.Tempo)
 	if p.TempoDecimal != 0 {
 		// TODO: Is this really the correct way to determine the decimal?
@@ -98,6 +95,7 @@ func (p Pattern) String() string {
 	return s
 }
 
+// TODO: What's a better name for "Unknown"?
 type Header struct {
 	ChunkID         [6]byte  // 0 - 5
 	Padding1        [7]byte  // 6
@@ -115,11 +113,14 @@ type DrumPart struct {
 	Sequence []byte
 }
 
+const (
+	separator string = "|"
+	onBeat    string = "x"
+	offBeat   string = "-"
+	errorRune string = "?"
+)
+
 func (d DrumPart) String() string {
-	separator := "|"
-	onBeat := "x"
-	offBeat := "-"
-	errorRune := "?"
 	s := fmt.Sprintf("(%d) %s\t", d.ID, d.Name)
 	for i := 0; i < len(d.Sequence); i++ {
 		if i%4 == 0 {
