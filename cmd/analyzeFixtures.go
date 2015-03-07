@@ -66,7 +66,10 @@ type valueFreqs map[byte]int
 func (v valueFreqs) String() string {
 	s := ""
 	for key, freq := range v {
-		s += fmt.Sprintf("%v/%v:%v\t", string(key), key, freq)
+		s += fmt.Sprintf("%s/%d/%X/%v:%v\t", string(key), key, key, key, freq)
+	}
+	for i := len(v); i <= maxLen; i++ {
+		s += " \t"
 	}
 	return s
 }
@@ -80,9 +83,11 @@ func (b byteDelta) String() string {
 	return fmt.Sprintf("%v\t%v", b.uniform, b.valueFreqs)
 }
 
+var maxLen int = 0 // TODO: THIS IS NOT OK
+
 // TODO: This is gross to read and too nested, fix it.
 func main() {
-	path := "/home/tasm/go/src/splice/fixtures/" // TODO: No hardcoding.
+	path := "../fixtures/" // TODO: No hardcoding.
 	fileInfos := getSpliceFileInfos(path)
 	allFiles := readFiles(path, fileInfos)
 	longest, _ := getLongestFileLengthInBytes(allFiles)
@@ -105,9 +110,12 @@ func main() {
 		}
 		byteDeltas[i] = byteDelta
 	}
-	numSpaces := 4
-	writer := tabwriter.NewWriter(os.Stdout, numSpaces, numSpaces, numSpaces, ' ', 0)
-
+	writer := tabwriter.NewWriter(os.Stdout, 0, 16, 0, '\t', tabwriter.Debug|tabwriter.AlignRight)
+	for _, byteDelta := range byteDeltas {
+		if maxLen < len(byteDelta.valueFreqs) {
+			maxLen = len(byteDelta.valueFreqs)
+		}
+	}
 	for i, byteDelta := range byteDeltas {
 		out := fmt.Sprintf("%v\t%v\t", i, byteDelta)
 		fmt.Fprintln(writer, out)
