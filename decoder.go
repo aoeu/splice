@@ -25,17 +25,17 @@ func DecodeFile(path string) (*Pattern, error) {
 	reader := io.Reader(f)
 	switch p.HardwareVersion {
 	case "0.808-alpha":
-		p.Tempo = p.Header.BPM / 2
+		p.Tempo = int(p.Header.BPM) / 2
 		if p.Header.BPMDecimal != 0 {
 			// TODO: Is this really the correct way to determine the decimal?
-			p.TempoDecimal = p.Header.BPMDecimal - 200
+			p.TempoDecimal = int(p.Header.BPMDecimal) - 200
 		}
 	case "0.909":
 		// TODO: Is there no byte this value can be pulled from?
 		p.Tempo = 240
 	case "0.708-alpha":
 		fmt.Println("uhetnashutnseoah")
-		p.Tempo = 128
+		p.Tempo = 999
 	}
 	p.DrumParts, err = readAllDrumParts(reader)
 	if err == io.ErrUnexpectedEOF {
@@ -74,8 +74,8 @@ func (d DrumParts) String() string {
 // drum pattern contained in a .splice file.
 type Pattern struct {
 	Header
-	Tempo           byte
-	TempoDecimal    byte
+	Tempo           int
+	TempoDecimal    int
 	HardwareVersion string
 	DrumParts
 }
