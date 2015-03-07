@@ -5,9 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
-	"regexp"
 )
 
 // DecodeFile decodes the drum machine file found at the provided path
@@ -38,17 +36,11 @@ func DecodeFile(path string) (*Pattern, error) {
 	case "0.708-alpha":
 		fmt.Println("uhetnashutnseoah")
 		p.Tempo = 128
-		// TODO: Filter out SPLICE\x00\x00
-		b, err := ioutil.ReadAll(f)
-		if err != nil {
-			return p, err
-		}
-		spliceRe := regexp.MustCompile("SPLICE\x00\x00\x00") // TODO: MOVE THIS
-		b = spliceRe.ReplaceAllLiteral(b, []byte{})
-		reader = bytes.NewReader(b)
-		fmt.Printf("%s\n", string(b))
 	}
 	p.DrumParts, err = readAllDrumParts(reader)
+	if err == io.ErrUnexpectedEOF {
+		return p, nil
+	}
 	return p, err
 }
 
@@ -63,7 +55,6 @@ func readAllDrumParts(r io.Reader) (DrumParts, error) {
 			}
 			return d, err
 		}
-		fmt.Sprintln("%+v %v", drumPart, err)
 		d = append(d, drumPart)
 	}
 	return d, nil
@@ -131,15 +122,19 @@ func (d DrumPart) String() string {
 	separator := "|"
 	onBeat := "x"
 	offBeat := "-"
+	errorRune := "?"
 	s := fmt.Sprintf("(%d) %s\t", d.ID, d.Name)
 	for i := 0; i < len(d.Sequence); i++ {
 		if i%4 == 0 {
 			s += separator
 		}
-		if d.Sequence[i] == 1 {
+		switch d.Sequence[i] {
+		case 1:
 			s += onBeat
-		} else {
+		case 0:
 			s += offBeat
+		default:
+			s += errorRune
 		}
 	}
 	s += separator
