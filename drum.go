@@ -3,7 +3,11 @@
 package drum
 
 import (
+	"bufio"
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 type header struct {
@@ -35,8 +39,50 @@ func NewPattern() *Pattern {
 	return p
 }
 
-func NewPatternFromBackup(input string) (Pattern, error) {
-	return Pattern{}, nil
+func NewPatternFromBackup(s string) (*Pattern, error) {
+	scanner := bufio.NewScanner(strings.NewReader(s))
+	p := NewPattern()
+	for lineNum := 0; scanner.Scan(); lineNum++ {
+		line := scanner.Text()
+		switch lineNum {
+		case 0:
+			p.HardwareVersion = parseHardwareVersion(line)
+		case 1:
+			var err error
+			p.Tempo, p.TempoDecimal, err = parseTempo(line)
+			if err != nil {
+				return p, err
+			}
+		default:
+			p.Tracks = append(p.Tracks, parseTrack(line))
+		}
+	}
+	return &Pattern{}, nil
+}
+
+func parseHardwareVersion(line string) string {
+	s := strings.TrimLeft(line, "Saved with HW Version: ")
+	return s
+}
+
+func parseTempo(line string) (tempo, tempoDecimal int, err error) {
+	s := strings.TrimLeft(line, "Tempo: ")
+	tempoRe := regexp.MustCompile("(\\d+).?(\\d+)?")
+	match := tempoRe.FindStringSubmatch(s)
+	tempo, err = strconv.Atoi(match[1])
+	if err != nil {
+		return 0, 0, err
+	}
+	tempoDecimal, err = strconv.Atoi(match[2])
+	if err != nil {
+		return tempo, 0, err
+	}
+	return tempo, tempoDecimal, nil
+}
+
+func parseTrack(line string) Track {
+	// TODO(aoeu): Implement
+	return Track{}
 }
 
 // A Track represents a named, identified drum sequence.
