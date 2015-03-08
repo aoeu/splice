@@ -3,6 +3,7 @@ package main
 // TODO: This program was coded in a sprint mostly while commuting on the L train, clean. it. up.
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -84,10 +85,12 @@ func (b byteDelta) String() string {
 }
 
 var maxLen int = 0 // TODO: THIS IS NOT OK
+var path string
 
 // TODO: This is gross to read and too nested, fix it.
 func main() {
-	path := "../fixtures/" // TODO: No hardcoding.
+	flag.StringVar(&path, "dir", "../patterns/", "Path to a patterns (.splice) directory")
+	flag.Parse()
 	fileInfos := getSpliceFileInfos(path)
 	allFiles := readFiles(path, fileInfos)
 	longest, _ := getLongestFileLengthInBytes(allFiles)
