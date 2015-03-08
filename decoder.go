@@ -27,11 +27,11 @@ func DecodeFile(path string) (*Pattern, error) {
 	case "0.808-alpha":
 		p.Tempo = int(p.header.Tempo) / 2
 		if p.header.TempoDecimal != 0 {
-			// TODO: Is this really the correct way to determine the decimal?
+			// TODO(aoeu): Is this really the correct way to determine the decimal?
 			p.TempoDecimal = int(p.header.TempoDecimal) - 200
 		}
 	case "0.909":
-		// TODO: Is there no byte this value can be pulled from?
+		// TODO(aoeu): Is there no byte this value can be pulled from?
 		p.Tempo = 240
 	case "0.708-alpha":
 		p.Tempo = 999
@@ -80,7 +80,7 @@ type Pattern struct {
 
 // NewPattern returns an empty pattern.
 func NewPattern() *Pattern {
-	// TODO: json.NewDecoder(r io.Reader) could be influential.
+	// TODO(aoeu): json.NewDecoder(r io.Reader) could be influential.
 	p := new(Pattern)
 	p.Tracks = make([]Track, 0)
 	return p
@@ -90,7 +90,7 @@ func (p Pattern) String() string {
 	h := bytes.Trim(p.header.HardwareVersion[:], "\x00")
 	bpm := fmt.Sprint(p.Tempo)
 	if p.TempoDecimal != 0 {
-		// TODO: Is this really the correct way to determine the decimal?
+		// TODO(aoeu): Is this really the correct way to determine the decimal?
 		bpm = fmt.Sprintf("%v.%v", p.Tempo, p.TempoDecimal)
 	}
 	s := fmt.Sprintf("Saved with HW Version: %s\nTempo: %v\n%v", h, bpm, p.Tracks)
@@ -98,7 +98,7 @@ func (p Pattern) String() string {
 }
 
 type header struct {
-	// TODO: What are better names for "Unknown.*"?
+	// TODO(aoeu): What are better names for "Unknown.*"?
 	ChunkID         [6]byte  // 0 - 5
 	Padding1        [7]byte  // 6
 	Unknown1        [1]byte  // 13
