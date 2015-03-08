@@ -54,7 +54,11 @@ func NewPatternFromBackup(s string) (*Pattern, error) {
 				return p, err
 			}
 		default:
-			p.Tracks = append(p.Tracks, parseTrack(line))
+			t, err := parseTrack(line)
+			if err != nil {
+				return p, err
+			}
+			p.Tracks = append(p.Tracks, t)
 		}
 	}
 	return p, nil
@@ -80,9 +84,64 @@ func parseTempo(line string) (tempo, tempoDecimal int, err error) {
 	return tempo, tempoDecimal, nil
 }
 
-func parseTrack(line string) Track {
-	// TODO(aoeu): Implement
-	return Track{}
+var idRe = regexp.MustCompile(`\((\d+)\) `)
+var nameRe = regexp.MustCompile(`(\w+)\s+\|`)
+var beatRe = regexp.MustCompile(`([x-]{4})\|`)
+
+func parseTrack(line string) (Track, error) {
+	// TODO(aoeu): rename "Id" to "ID"
+	id, line, err := parseTrackID(line)
+	if err != nil {
+		return Track{}, err
+	}
+	name, line := parseTrackName(line)
+	bars, line := parseBar(line, 4)
+	fmt.Println(bars)
+	return Track{Name: name, ID: id, Sequence: []byte{}}, nil
+
+}
+
+func parseTrackID(line string) (id byte, subLine string, err error) {
+	idMatch := idRe.FindAllStringSubmatch(line, 1)[0]
+	n, err := strconv.Atoi(idMatch[1])
+	if err != nil {
+		return id, subLine, err
+	}
+	subLine = strings.TrimLeft(line, idMatch[0])
+	return byte(n), subLine, nil
+}
+
+func parseTrackName(line string) (name, chompedLine string) {
+	nameMatch := nameRe.FindAllStringSubmatch(line, 1)[0]
+	name = nameMatch[1]
+	line = strings.TrimLeft(line, nameMatch[0])
+	return name, chompedLine
+}
+
+func parseBar(line string, numMeasures int) (bar []bool, subLine string) {
+	measureMatch := beatRe.FindAllStringSubmatch(line, numMeasures)
+	for i := 0; i < numMeasures; i++ {
+		measure := measureMatch[i][1]
+		bar = append(bar, parseBeats(measure)...)
+		line = strings.TrimLeft(line, measureMatch[i][0])
+	}
+	return bar, line
+}
+
+func parseBeats(measure string) []bool {
+	var beats []bool
+	for _, beat := range measure {
+		switch string(beat) {
+		case onBeat:
+			beats = append(beats, true)
+		case offBeat:
+			beats = append(beats, false)
+		default:
+			// TODO(aoeu): This doesn't seem correct.
+			beats = append(beats, false)
+		}
+	}
+	return beats
 }
 
 // A Track represents a named, identified drum sequence.
@@ -101,6 +160,7 @@ func NewTrack() *Track {
 
 const (
 	separator string = "|"
+	// TODO(aoeu): Should these be runes instead of strings?
 	onBeat    string = "x"
 	offBeat   string = "-"
 	errorRune string = "?"

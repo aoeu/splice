@@ -37,6 +37,22 @@ func TestParseTempo(t *testing.T) {
 	}
 }
 
+func TestParseTrackId(t *testing.T) {
+	input := "(3) hh-open	|--x-|--x-|x-x-|--x-|"
+	var expectedId byte = 3
+	expectedLine := "hh-open	|--x-|--x-|x-x-|--x-|"
+	actualId, actualLine, err := parseTrackID(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if expectedId != actualId {
+		t.Fatalf("Expected ID %v but received %v", expectedId, actualId)
+	}
+	if expectedLine != actualLine {
+		t.Fatalf("Expected line '%v' but received '%v'", expectedLine, actualLine)
+	}
+}
+
 func TestNewPatternFromBackup(t *testing.T) {
 	tData := []struct {
 		name   string
