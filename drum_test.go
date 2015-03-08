@@ -55,17 +55,16 @@ Tempo: 120
 		},
 	}
 
-	for _, input := range tData {
-		p, err := NewPatternFromBackup(input.backup)
-		if err != nil {
-			t.Fatal("Could not create Pattern from backup - %v", err)
-		}
-		if p.HardwareVersion != "0.808-alpha" {
-			t.Fatalf("wrong version - %v", p.HardwareVersion)
-		}
-		if p.Tempo != 120 {
-			t.Fatalf("wrong tempo - %v", p.Tempo)
-		}
-
+	input := tData[0]
+	p, err := NewPatternFromBackup(input.backup)
+	if err != nil {
+		t.Fatal("Could not create Pattern from backup - %v", err)
 	}
+	if p.HardwareVersion != "0.808-alpha" {
+		t.Fatalf("wrong version - %v", p.HardwareVersion)
+	}
+	if p.Tempo != 120 {
+		t.Fatalf("wrong tempo - %v", p.Tempo)
+	}
+
 }

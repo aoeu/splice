@@ -42,7 +42,7 @@ func NewPattern() *Pattern {
 func NewPatternFromBackup(s string) (*Pattern, error) {
 	scanner := bufio.NewScanner(strings.NewReader(s))
 	p := NewPattern()
-	for lineNum := 0; scanner.Scan(); lineNum++ {
+	for lineNum := 0; scanner.Scan() && lineNum < 2; lineNum++ {
 		line := scanner.Text()
 		switch lineNum {
 		case 0:
@@ -57,7 +57,7 @@ func NewPatternFromBackup(s string) (*Pattern, error) {
 			p.Tracks = append(p.Tracks, parseTrack(line))
 		}
 	}
-	return &Pattern{}, nil
+	return p, nil
 }
 
 func parseHardwareVersion(line string) string {
@@ -75,7 +75,7 @@ func parseTempo(line string) (tempo, tempoDecimal int, err error) {
 	}
 	tempoDecimal, err = strconv.Atoi(match[2])
 	if err != nil {
-		return tempo, 0, err
+		return tempo, 0, nil
 	}
 	return tempo, tempoDecimal, nil
 }
