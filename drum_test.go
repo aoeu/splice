@@ -124,5 +124,9 @@ Tempo: 120
 	if p.Tempo != 120 {
 		t.Fatalf("wrong tempo - %v", p.Tempo)
 	}
-
+	expectedNumTracks := 6
+	actualNumTracks := len(p.Tracks)
+	if actualNumTracks != expectedNumTracks {
+		t.Fatalf("Expected %v tracks but received %v tracks", expectedNumTracks, actualNumTracks)
+	}
 }

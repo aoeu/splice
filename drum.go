@@ -42,7 +42,7 @@ func NewPattern() *Pattern {
 func NewPatternFromBackup(s string) (*Pattern, error) {
 	scanner := bufio.NewScanner(strings.NewReader(s))
 	p := NewPattern()
-	for lineNum := 0; scanner.Scan() && lineNum < 2; lineNum++ {
+	for lineNum := 0; scanner.Scan(); lineNum++ {
 		line := scanner.Text()
 		switch lineNum {
 		case 0:
@@ -95,8 +95,7 @@ func parseTrack(line string) (Track, error) {
 	}
 	name, line := parseTrackName(line)
 	bars, line := parseBar(line, 4)
-	fmt.Println(bars)
-	return Track{Name: name, ID: id, Sequence: []byte{}}, nil
+	return Track{Name: name, ID: id, Sequence: bars}, nil
 
 }
 
