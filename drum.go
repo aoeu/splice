@@ -118,7 +118,7 @@ func parseTrackName(line string) (name, subLine string) {
 	return name, s[1]
 }
 
-func parseBar(line string, numMeasures int) (bar []bool, subLine string) {
+func parseBar(line string, numMeasures int) (bar []byte, subLine string) {
 	measureMatch := beatRe.FindAllStringSubmatch(line, numMeasures)
 	for i := 0; i < numMeasures; i++ {
 		measure := measureMatch[i][1]
@@ -128,17 +128,17 @@ func parseBar(line string, numMeasures int) (bar []bool, subLine string) {
 	return bar, line
 }
 
-func parseBeats(measure string) []bool {
-	var beats []bool
+func parseBeats(measure string) []byte {
+	var beats []byte
 	for _, beat := range measure {
 		switch string(beat) {
 		case onBeat:
-			beats = append(beats, true)
+			beats = append(beats, 1)
 		case offBeat:
-			beats = append(beats, false)
+			beats = append(beats, 0)
 		default:
 			// TODO(aoeu): This doesn't seem correct.
-			beats = append(beats, false)
+			beats = append(beats, 0)
 		}
 	}
 	return beats

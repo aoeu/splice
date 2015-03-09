@@ -67,6 +67,34 @@ func TestParseTrackName(t *testing.T) {
 
 }
 
+// func parseBar(line string, numMeasures int) (bar []byte, subLine string)
+func TestParseBar(t *testing.T) {
+	input := "--x-|--x-|x-x-|--x-|"
+	expected := []byte{0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0}
+	actual, s := parseBar(input, 4)
+	for i, b := range actual {
+		if expected[i] != b {
+			t.Fatal("Expected '%v' but received '%v' at %v",
+				expected, actual, i)
+		}
+	}
+	if s != "" {
+		t.Fatal("Expected empty string but received '%v'", s)
+	}
+}
+
+func TestParseBeats(t *testing.T) {
+	measure := "--x-"
+	expected := []byte{0, 0, 1, 0}
+	actual := parseBeats(measure)
+	for i, b := range actual {
+		if expected[i] != b {
+			t.Fatal("Expected '%v' but received '%v' at %v",
+				expected, actual, i)
+		}
+	}
+}
+
 func TestNewPatternFromBackup(t *testing.T) {
 	tData := []struct {
 		name   string
