@@ -39,7 +39,7 @@ func NewPattern() *Pattern {
 	return p
 }
 
-// NewPatternFromBackup creates a pattern structure by parsing 
+// NewPatternFromBackup creates a pattern structure by parsing
 // a backup file's human-readible text data.
 func NewPatternFromBackup(s string) (*Pattern, error) {
 	scanner := bufio.NewScanner(strings.NewReader(s))

@@ -8,6 +8,26 @@ import (
 
 func TestEncodeTrack(t *testing.T) {
 	// TODO(aoeu): Implement.
+	expected := []byte{2, 0, 0, 0,
+		4, 'c', 'l', 'a', 'p',
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 1, 0, 1,
+		0, 0, 1, 1}
+	track := Track{ID: 2, Name: "clap",
+		Sequence: []byte{1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 1, 0, 1,
+			0, 0, 1, 1}}
+	actual := track.encode()
+	if len(expected) != len(actual) {
+		t.Fatalf("Expected %v output bytes and got %v", len(expected), len(actual))
+	}
+	for i, b := range actual {
+		if expected[i] != b {
+			t.Fatalf("Expected '%v' byte but received '%v' at %v", expected[i], b, i)
+		}
+	}
 }
 
 func TestEncode(t *testing.T) {
@@ -50,5 +70,4 @@ Tempo: 120
 			}
 		}
 	}
-
 }
