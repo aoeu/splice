@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+func TestEncodeTrack(t *testing.T) {
+	// TODO(aoeu): Implement.
+}
+
 func TestEncode(t *testing.T) {
 	tData := []struct {
 		path   string

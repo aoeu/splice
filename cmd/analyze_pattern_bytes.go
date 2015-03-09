@@ -55,7 +55,7 @@ func getLongestFileLengthInBytes(files map[string][]byte) (longest int, allEqual
 }
 
 func getMapKeys(aMap map[string][]byte) (keys []string) {
-	for key, _ := range aMap {
+	for key := range aMap {
 		keys = append(keys, key)
 	}
 
@@ -84,7 +84,7 @@ func (b byteDelta) String() string {
 	return fmt.Sprintf("%v\t%v", b.uniform, b.valueFreqs)
 }
 
-var maxLen int = 0 // TODO: THIS IS NOT OK
+var maxLen int // TODO: Is there no alternative since this gets used in String()?
 var path string
 
 // TODO: This is gross to read and too nested, fix it.
@@ -102,7 +102,7 @@ func main() {
 		for _, fileName := range fileNames {
 			if len(allFiles[fileName]) > i {
 				byteAtOffset := allFiles[fileName][i]
-				byteDelta.valueFreqs[byteAtOffset] += 1
+				byteDelta.valueFreqs[byteAtOffset]++
 			} else {
 				checkedAllFiles = false
 			}

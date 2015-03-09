@@ -39,6 +39,8 @@ func NewPattern() *Pattern {
 	return p
 }
 
+// NewPatternFromBackup creates a pattern structure by parsing 
+// a backup file's human-readible text data.
 func NewPatternFromBackup(s string) (*Pattern, error) {
 	scanner := bufio.NewScanner(strings.NewReader(s))
 	p := NewPattern()
@@ -156,7 +158,7 @@ func NewTrack() *Track {
 	return t
 }
 
-func (t Track) Encode() []byte {
+func (t Track) encode() []byte {
 	b := []byte{t.ID, 0, 0, 0}
 	b = append(b, byte(len(t.Name)))
 	b = append(b, []byte(t.Name)...)

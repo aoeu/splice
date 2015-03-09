@@ -28,10 +28,10 @@ func TestParseTempo(t *testing.T) {
 			t.Fatal(err)
 		}
 		if tempo != expected.tempo {
-			t.Fatal("Expected tempo %v but received %v", expected.tempo, tempo)
+			t.Fatalf("Expected tempo %v but received %v", expected.tempo, tempo)
 		}
 		if tempoDecimal != expected.tempoDecimal {
-			t.Fatal("Expected tempo decimal %v but received %v", expected.tempoDecimal, tempoDecimal)
+			t.Fatalf("Expected tempo decimal %v but received %v", expected.tempoDecimal, tempoDecimal)
 		}
 
 	}
@@ -39,14 +39,14 @@ func TestParseTempo(t *testing.T) {
 
 func TestParseTrackId(t *testing.T) {
 	input := "(3) hh-open	|--x-|--x-|x-x-|--x-|"
-	var expectedId byte = 3
+	var expectedID byte = 3
 	expectedLine := "hh-open	|--x-|--x-|x-x-|--x-|"
-	actualId, actualLine, err := parseTrackID(input)
+	actualID, actualLine, err := parseTrackID(input)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expectedId != actualId {
-		t.Fatalf("Expected ID %v but received %v", expectedId, actualId)
+	if expectedID != actualID {
+		t.Fatalf("Expected ID %v but received %v", expectedID, actualID)
 	}
 	if expectedLine != actualLine {
 		t.Fatalf("Expected line '%v' but received '%v'", expectedLine, actualLine)
@@ -74,12 +74,12 @@ func TestParseBar(t *testing.T) {
 	actual, s := parseBar(input, 4)
 	for i, b := range actual {
 		if expected[i] != b {
-			t.Fatal("Expected '%v' but received '%v' at %v",
+			t.Fatalf("Expected '%v' but received '%v' at %v",
 				expected, actual, i)
 		}
 	}
 	if s != "" {
-		t.Fatal("Expected empty string but received '%v'", s)
+		t.Fatalf("Expected empty string but received '%v'", s)
 	}
 }
 
@@ -89,7 +89,7 @@ func TestParseBeats(t *testing.T) {
 	actual := parseBeats(measure)
 	for i, b := range actual {
 		if expected[i] != b {
-			t.Fatal("Expected '%v' but received '%v' at %v",
+			t.Fatalf("Expected '%v' but received '%v' at %v",
 				expected, actual, i)
 		}
 	}
@@ -116,7 +116,7 @@ Tempo: 120
 	input := tData[0]
 	p, err := NewPatternFromBackup(input.backup)
 	if err != nil {
-		t.Fatal("Could not create Pattern from backup - %v", err)
+		t.Fatalf("Could not create Pattern from backup - %v", err)
 	}
 	if p.HardwareVersion != "0.808-alpha" {
 		t.Fatalf("wrong version - %v", p.HardwareVersion)
