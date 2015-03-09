@@ -85,7 +85,6 @@ func parseTempo(line string) (tempo, tempoDecimal int, err error) {
 }
 
 var idRe = regexp.MustCompile(`\((\d+)\) `)
-var nameRe = regexp.MustCompile(`(\w+)\s+\|`)
 var beatRe = regexp.MustCompile(`([x-]{4})\|`)
 
 func parseTrack(line string) (Track, error) {
@@ -111,11 +110,12 @@ func parseTrackID(line string) (id byte, subLine string, err error) {
 	return byte(n), subLine, nil
 }
 
-func parseTrackName(line string) (name, chompedLine string) {
-	nameMatch := nameRe.FindAllStringSubmatch(line, 1)[0]
-	name = nameMatch[1]
-	line = strings.TrimLeft(line, nameMatch[0])
-	return name, chompedLine
+var nameRe = regexp.MustCompile(`([\w-]+)\s+\|`)
+
+func parseTrackName(line string) (name, subLine string) {
+	s := strings.SplitN(line, "|", 2)
+	name = strings.TrimRight(s[0], " \t")
+	return name, s[1]
 }
 
 func parseBar(line string, numMeasures int) (bar []bool, subLine string) {

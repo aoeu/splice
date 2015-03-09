@@ -53,6 +53,20 @@ func TestParseTrackId(t *testing.T) {
 	}
 }
 
+func TestParseTrackName(t *testing.T) {
+	input := "hh-open	|--x-|--x-|x-x-|--x-|"
+	expectedName := "hh-open"
+	expectedLine := "--x-|--x-|x-x-|--x-|"
+	actualName, actualLine := parseTrackName(input)
+	if expectedName != actualName {
+		t.Fatalf("Expected name '%v' but received '%v'", expectedName, actualName)
+	}
+	if expectedLine != actualLine {
+		t.Fatalf("Expected line '%v' but received '%v'", expectedLine, actualLine)
+	}
+
+}
+
 func TestNewPatternFromBackup(t *testing.T) {
 	tData := []struct {
 		name   string
