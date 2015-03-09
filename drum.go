@@ -16,9 +16,9 @@ type header struct {
 	Padding1        [7]byte  // 6
 	Unknown1        [1]byte  // 13
 	HardwareVersion [31]byte // 14 - 45
-	Unknown2        [2]byte
-	TempoDecimal    byte // Tempo Decimal for 808
-	Tempo           byte // Tempo for 808
+	Unknown2        [2]byte  //
+	TempoDecimal    byte     // Tempo Decimal for 808
+	Tempo           byte     // Tempo for 808
 	Unknown3        byte
 }
 
@@ -96,7 +96,6 @@ func parseTrack(line string) (Track, error) {
 	name, line := parseTrackName(line)
 	bars, line := parseBar(line, 4)
 	return Track{Name: name, ID: id, Sequence: bars}, nil
-
 }
 
 func parseTrackID(line string) (id byte, subLine string, err error) {
@@ -157,9 +156,17 @@ func NewTrack() *Track {
 	return t
 }
 
+func (t Track) Encode() []byte {
+	b := []byte{t.ID, 0, 0, 0}
+	b = append(b, byte(len(t.Name)))
+	b = append(b, []byte(t.Name)...)
+	b = append(b, t.Sequence...)
+	return b
+}
+
 const (
 	separator string = "|"
-	// TODO(aoeu): Should these be runes instead of strings?
+	// TODO(aoeu): Could these be runes instead of strings?
 	onBeat    string = "x"
 	offBeat   string = "-"
 	errorRune string = "?"

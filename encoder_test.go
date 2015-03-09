@@ -37,5 +37,14 @@ Tempo: 120
 		if len(expected) != len(actual) {
 			t.Fatalf("Expected %v output bytes and got %v", len(expected), len(actual))
 		}
+		for i, b := range actual {
+			if _, ok := unknownIndexes[i]; ok {
+				continue
+			}
+			if expected[i] != b {
+				t.Fatalf("Expected '%v' byte but received '%v' at %v", expected[i], b, i)
+			}
+		}
 	}
+
 }
