@@ -39,6 +39,15 @@ func NewPattern() *Pattern {
 	return p
 }
 
+func (p Pattern) String() string {
+	bpm := fmt.Sprint(p.Tempo)
+	if p.TempoDecimal != 0 {
+		bpm = fmt.Sprintf("%v.%v", p.Tempo, p.TempoDecimal)
+	}
+	s := fmt.Sprintf("Saved with HW Version: %s\nTempo: %v\n%v", p.HardwareVersion, bpm, p.Tracks)
+	return s
+}
+
 // NewPatternFromBackup creates a pattern structure by parsing
 // a backup file's human-readible text data.
 func NewPatternFromBackup(s string) (*Pattern, error) {

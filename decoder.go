@@ -12,19 +12,40 @@ import (
 // and returns a pointer to a parsed pattern which is the entry point to the
 // rest of the data.
 func DecodeFile(path string) (*Pattern, error) {
-	h := header{}
 	p := NewPattern()
 	f, err := os.Open(path)
 	if err != nil {
 		return p, err
 	}
 	defer f.Close()
-	if binary.Read(f, binary.LittleEndian, &h); err != nil {
-		return p, err
+	d := NewDecoder(f)
+	err = d.Decode(p)
+	return p, err
+}
+
+// A Decoder represents a drum pattern parser.
+// The parser assumes that input follows an undocumented specification.
+type Decoder struct {
+	// TODO(aoeu): provide a specfication and better documentation.
+	r io.Reader
+}
+
+// NewDecoder creates a new drum pattern decoder reading from r.
+func NewDecoder(r io.Reader) *Decoder {
+	// TODO: Get byte-at-a-time reader like in json.Decoder.switchToReader(...)?
+	return &Decoder{r}
+}
+
+// Decode reads from the decoder's input stream to initialize a drum pattern.
+func (d *Decoder) Decode(p *Pattern) error {
+	// ???  pointer to a pattern in the signature or just a pattern that can be returned?
+	h := header{}
+	if err := binary.Read(d.r, binary.LittleEndian, &h); err != nil {
+		return err
 	}
 	p.HardwareVersion = string(bytes.Trim(h.HardwareVersion[:], "\x00"))
-	reader := io.Reader(f)
 	switch p.HardwareVersion {
+	// TODO(aoeu): Maybe a map of hardware versions and processing functions would help?
 	case "0.808-alpha":
 		p.Tempo = int(h.Tempo) / 2
 		if h.TempoDecimal != 0 {
@@ -37,24 +58,25 @@ func DecodeFile(path string) (*Pattern, error) {
 	case "0.708-alpha":
 		p.Tempo = 999
 	}
-	p.Tracks, err = readAllTracks(reader)
+	var err error
+	p.Tracks, err = readAllTracks(d.r)
 	if err == io.ErrUnexpectedEOF {
-		return p, nil
+		return nil
 	}
-	return p, err
+	return err
 }
 
 func readAllTracks(r io.Reader) (Tracks, error) {
-	var d []Track
+	var t Tracks
 	for {
-		drumPart, err := readTrack(r)
+		track, err := readTrack(r)
 		if err != nil {
 			if err == io.EOF {
-				return d, nil
+				return t, nil
 			}
-			return d, err
+			return t, err
 		}
-		d = append(d, drumPart)
+		t = append(t, track)
 	}
 }
 
@@ -66,16 +88,6 @@ func (d Tracks) String() string {
 	for _, drumPart := range d {
 		s += fmt.Sprintf("%v\n", drumPart)
 	}
-	return s
-}
-
-func (p Pattern) String() string {
-	bpm := fmt.Sprint(p.Tempo)
-	if p.TempoDecimal != 0 {
-		// TODO(aoeu): Is this really the correct way to determine the decimal?
-		bpm = fmt.Sprintf("%v.%v", p.Tempo, p.TempoDecimal)
-	}
-	s := fmt.Sprintf("Saved with HW Version: %s\nTempo: %v\n%v", p.HardwareVersion, bpm, p.Tracks)
 	return s
 }
 
