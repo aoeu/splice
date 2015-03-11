@@ -36,7 +36,7 @@ func TestEncode(t *testing.T) {
 		path   string
 		backup string
 	}{
-		{"pattern_1",
+		{"pattern_1.splice",
 			`Saved with HW Version: 0.808-alpha
 Tempo: 120
 (0) kick	|x---|x---|x---|x---|
@@ -47,21 +47,41 @@ Tempo: 120
 (5) cowbell	|----|----|--x-|----|
 `,
 		},
+		{"pattern_2.splice",
+			`Saved with HW Version: 0.808-alpha
+Tempo: 98.4
+(0) kick	|x---|----|x---|----|
+(1) snare	|----|x---|----|x---|
+(3) hh-open	|--x-|--x-|x-x-|--x-|
+(5) cowbell	|----|----|x---|----|
+`,
+		},
+		{"pattern_3.splice",
+			`Saved with HW Version: 0.808-alpha
+Tempo: 118
+(40) kick	|x---|----|x---|----|
+(1) clap	|----|x---|----|x---|
+(3) hh-open	|--x-|--x-|x-x-|--x-|
+(5) low-tom	|----|---x|----|----|
+(12) mid-tom	|----|----|x---|----|
+(9) hi-tom	|----|----|-x--|----|
+`,
+		},
 	}
 
-	b := new(bytes.Buffer)
-	e := NewEncoder(b)
 	for _, input := range tData {
+		b := new(bytes.Buffer)
+		e := NewEncoder(b)
 		pattern, err := NewPatternFromBackup(input.backup)
 		err = e.Encode(*pattern)
 		actual := b.Bytes()
 		if err != nil {
 			t.Fatalf("Something went wrong encoding - %v", err)
 		}
-		filePath := path.Join("patterns", input.path+".splice")
+		filePath := path.Join("patterns", input.path)
 		expected, err := ioutil.ReadFile(filePath)
 		if err != nil {
-			t.Fatalf("Could not read input file at path %v - %v", filePath, err)
+			t.Fatal(err)
 		}
 		if len(expected) != len(actual) {
 			t.Fatalf("Expected %v output bytes and got %v", len(expected), len(actual))
