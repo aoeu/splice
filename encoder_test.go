@@ -1,6 +1,7 @@
 package drum
 
 import (
+	"bytes"
 	"io/ioutil"
 	"path"
 	"testing"
@@ -48,8 +49,12 @@ Tempo: 120
 		},
 	}
 
+	b := new(bytes.Buffer)
+	e := NewEncoder(b)
 	for _, input := range tData {
-		actual, err := Encode(input.backup)
+		pattern, err := NewPatternFromBackup(input.backup)
+		err = e.Encode(*pattern)
+		actual := b.Bytes()
 		if err != nil {
 			t.Fatalf("Something went wrong encoding - %v", err)
 		}

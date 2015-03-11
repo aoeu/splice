@@ -1,8 +1,9 @@
 package drum
 
 import (
-	"bytes"
 	"encoding/binary"
+	"io"
+	"os"
 )
 
 var unknownIndexes = map[int]struct{}{13: {}, 45: {}, 46: {}, 49: {}}
@@ -10,32 +11,36 @@ var unknownIndexes = map[int]struct{}{13: {}, 45: {}, 46: {}, 49: {}}
 // TODO: Implement method that encodes from pattern wrap it.
 
 // Encode a text file backup in a custom binary data format.
-// TODO: Spec out the documentation.
-func Encode(input string) ([]byte, error) {
-	// TODO: Could this be bound to a Pattern type to be more consistent with Decode?
-	p, err := NewPatternFromBackup(input)
+func EncodeFile(path string, pattern Pattern) error {
+	f, err := os.Open(path)
 	if err != nil {
-		return []byte{}, err
+		return err
 	}
-	// TODO: Implement header() method bound to pattern type.
-	h := header{}
-	h.ChunkID = [6]byte{'S', 'P', 'L', 'I', 'C', 'E'}
-	// TODO: Smarter handling of tempos for variant versions.
-	for i, r := range p.HardwareVersion {
-		h.HardwareVersion[i] = byte(r)
-	}
-	if p.TempoDecimal != 0 {
-		h.TempoDecimal = byte(p.TempoDecimal + 200)
-	}
-	h.Tempo = byte(p.Tempo * 2)
-	buf := new(bytes.Buffer)
-	if err := binary.Write(buf, binary.LittleEndian, h); err != nil {
-		return []byte{}, nil
+	defer f.Close()
+	e := NewEncoder(f)
+	err = e.Encode(pattern)
+	return err
+}
+
+// An Encoder represents a parser to binary from a drum pattern.
+type Encoder struct {
+	w io.Writer
+}
+
+// NewEncoder creates a new drum pattern encoder writing to w.
+func NewEncoder(w io.Writer) *Encoder {
+	return &Encoder{w}
+}
+
+// Encode writes to the encoder's output stream to serialize a drum pattern.
+func (e Encoder) Encode(p Pattern) error {
+	if err := binary.Write(e.w, binary.LittleEndian, p.header()); err != nil {
+		return err
 	}
 	for _, t := range p.Tracks {
-		if err := binary.Write(buf, binary.LittleEndian, t.encode()); err != nil {
-			return []byte{}, err
+		if err := binary.Write(e.w, binary.LittleEndian, t.encode()); err != nil {
+			return err
 		}
 	}
-	return buf.Bytes(), nil
+	return nil
 }

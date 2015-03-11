@@ -48,6 +48,20 @@ func (p Pattern) String() string {
 	return s
 }
 
+func (p Pattern) header() header {
+	h := header{}
+	h.ChunkID = [6]byte{'S', 'P', 'L', 'I', 'C', 'E'}
+	// TODO: Smarter handling of tempos for variant versions.
+	for i, r := range p.HardwareVersion {
+		h.HardwareVersion[i] = byte(r)
+	}
+	if p.TempoDecimal != 0 {
+		h.TempoDecimal = byte(p.TempoDecimal + 200)
+	}
+	h.Tempo = byte(p.Tempo * 2)
+	return h
+}
+
 // NewPatternFromBackup creates a pattern structure by parsing
 // a backup file's human-readible text data.
 func NewPatternFromBackup(s string) (*Pattern, error) {
@@ -111,7 +125,7 @@ func parseTrack(line string) (Track, error) {
 
 func parseTrackID(line string) (id byte, subLine string, err error) {
 	idMatch := idRe.FindStringSubmatch(line)
-	if len(idMatch) != 2  {
+	if len(idMatch) != 2 {
 		return 0, "", fmt.Errorf("No track ID parsed from line: '%v'", line)
 	}
 	n, err := strconv.Atoi(idMatch[1])
