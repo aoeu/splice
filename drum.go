@@ -110,7 +110,10 @@ func parseTrack(line string) (Track, error) {
 }
 
 func parseTrackID(line string) (id byte, subLine string, err error) {
-	idMatch := idRe.FindAllStringSubmatch(line, 1)[0]
+	idMatch := idRe.FindStringSubmatch(line)
+	if len(idMatch) != 2  {
+		return 0, "", fmt.Errorf("No track ID parsed from line: '%v'", line)
+	}
 	n, err := strconv.Atoi(idMatch[1])
 	if err != nil {
 		return id, subLine, err

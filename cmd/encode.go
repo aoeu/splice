@@ -12,7 +12,7 @@ var patternPath string
 
 func main() {
 	flag.StringVar(&patternPath, "file",
-		"../patterns/decoded/pattern_7.txt",
+		"../patterns/decoded/pattern_3.txt",
 		"Path to a text file representing a pattern.")
 	flag.Parse()
 	data, err := ioutil.ReadFile(patternPath)
