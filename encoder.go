@@ -10,7 +10,7 @@ var unknownIndexes = map[int]struct{}{13: {}, 45: {}, 46: {}, 49: {}}
 
 // TODO: Implement method that encodes from pattern wrap it.
 
-// Encode a text file backup in a custom binary data format.
+// EncodeFile a text file backup in a custom binary data format.
 func EncodeFile(path string, pattern Pattern) error {
 	f, err := os.Open(path)
 	if err != nil {

@@ -38,7 +38,6 @@ func NewDecoder(r io.Reader) *Decoder {
 
 // Decode reads from the decoder's input stream to initialize a drum pattern.
 func (d *Decoder) Decode(p *Pattern) error {
-	// ???  pointer to a pattern in the signature or just a pattern that can be returned?
 	h := header{}
 	if err := binary.Read(d.r, binary.LittleEndian, &h); err != nil {
 		return err
@@ -83,9 +82,9 @@ func readAllTracks(r io.Reader) (Tracks, error) {
 // Tracks is a drum Track series that comprises the pattern.
 type Tracks []Track
 
-func (d Tracks) String() string {
+func (t Tracks) String() string {
 	s := ""
-	for _, drumPart := range d {
+	for _, drumPart := range t {
 		s += fmt.Sprintf("%v\n", drumPart)
 	}
 	return s

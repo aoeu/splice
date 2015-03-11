@@ -96,7 +96,6 @@ func parseHardwareVersion(line string) string {
 
 func parseTempo(line string) (tempo, tempoDecimal int, err error) {
 	s := strings.TrimLeft(line, "Tempo: ")
-	tempoRe := regexp.MustCompile("(\\d+).?(\\d+)?")
 	match := tempoRe.FindStringSubmatch(s)
 	tempo, err = strconv.Atoi(match[1])
 	if err != nil {
@@ -110,6 +109,7 @@ func parseTempo(line string) (tempo, tempoDecimal int, err error) {
 }
 
 var idRe = regexp.MustCompile(`\((\d+)\) `)
+var tempoRe = regexp.MustCompile("(\\d+).?(\\d+)?")
 var beatRe = regexp.MustCompile(`([x-]{4})\|`)
 
 func parseTrack(line string) (Track, error) {
@@ -145,11 +145,11 @@ func parseTrackName(line string) (name, subLine string) {
 }
 
 func parseBar(line string, numMeasures int) (bar []byte, subLine string) {
-	measureMatch := beatRe.FindAllStringSubmatch(line, numMeasures)
+	measureMatches := beatRe.FindAllStringSubmatch(line, numMeasures)
 	for i := 0; i < numMeasures; i++ {
-		measure := measureMatch[i][1]
+		measure := measureMatches[i][1]
 		bar = append(bar, parseBeats(measure)...)
-		line = strings.TrimLeft(line, measureMatch[i][0])
+		line = strings.TrimLeft(line, measureMatches[i][0])
 	}
 	return bar, line
 }
