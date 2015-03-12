@@ -89,7 +89,7 @@ var path string
 
 // TODO: This is gross to read and too nested, fix it.
 func main() {
-	flag.StringVar(&path, "dir", "../patterns/", "Path to a patterns (.splice) directory")
+	flag.StringVar(&path, "dir", "encoding/drum/patterns/", "Path to a patterns (.splice) directory")
 	flag.Parse()
 	fileInfos := getSpliceFileInfos(path)
 	allFiles := readFiles(path, fileInfos)
