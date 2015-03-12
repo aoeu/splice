@@ -19,7 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	b, err := drum.Encode(string(data))
+	b, err := drum.EncodeFile(string(data))
 	if err != nil {
 		log.Fatal(err)
 	}
