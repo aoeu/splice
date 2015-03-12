@@ -1,10 +1,10 @@
 package main
 
 import (
-	"splice/encoding/drum"
 	"flag"
 	"fmt"
 	"log"
+	"splice/encoding/drum"
 )
 
 var fixturePath string

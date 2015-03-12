@@ -1,29 +1,34 @@
 package main
 
 import (
-	"drum"
+	"bufio"
 	"flag"
 	"io/ioutil"
 	"log"
 	"os"
+	"splice/encoding/drum"
 )
 
 var patternPath string
+var defaultPath = "../encoding/drum/patterns/decoded/pattern_3.txt"
 
 func main() {
 	flag.StringVar(&patternPath, "file",
-		"../patterns/decoded/pattern_3.txt",
+		defaultPath,
 		"Path to a text file representing a pattern.")
 	flag.Parse()
 	data, err := ioutil.ReadFile(patternPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	b, err := drum.EncodeFile(string(data))
+	p, err := drum.NewPatternFromBackup(string(data))
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = os.Stdout.Write(b)
+	w := bufio.NewWriter(os.Stdout)
+	defer w.Flush()
+	e := drum.NewEncoder(w)
+	err = e.Encode(*p)
 	if err != nil {
 		log.Fatal(err)
 	}
