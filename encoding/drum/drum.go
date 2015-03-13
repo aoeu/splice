@@ -4,6 +4,7 @@ package drum
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -11,14 +12,13 @@ import (
 )
 
 type header struct {
-	// TODO(aoeu): What are better names for "Unknown.*"?
-	ChunkID         [6]byte  // 0 - 5
-	Padding1        [7]byte  // 6
-	Unknown1        [1]byte  // 13
-	HardwareVersion [31]byte // 14 - 45
-	Unknown2        [2]byte  //
-	TempoDecimal    byte     // Tempo Decimal for 808
-	Tempo           byte     // Tempo for 808
+	ChunkID         [6]byte
+	Padding1        [7]byte
+	Unknown1        [1]byte
+	HardwareVersion [31]byte
+	Unknown2        [2]byte
+	TempoDecimal    byte
+	Tempo           byte
 	Unknown3        byte
 }
 
@@ -33,7 +33,6 @@ type Pattern struct {
 
 // NewPattern returns an empty pattern.
 func NewPattern() *Pattern {
-	// TODO(aoeu): json.NewDecoder(r io.Reader) could be influential.
 	p := new(Pattern)
 	p.Tracks = make([]Track, 0)
 	return p
@@ -51,14 +50,15 @@ func (p Pattern) String() string {
 func (p Pattern) header() header {
 	h := header{}
 	h.ChunkID = [6]byte{'S', 'P', 'L', 'I', 'C', 'E'}
-	// TODO: Smarter handling of tempos for variant versions.
 	for i, r := range p.HardwareVersion {
 		h.HardwareVersion[i] = byte(r)
 	}
-	if p.TempoDecimal != 0 {
-		h.TempoDecimal = byte(p.TempoDecimal + 200)
+	if p.HardwareVersion == "0.808-alpha" {
+		if p.TempoDecimal != 0 {
+			h.TempoDecimal = byte(p.TempoDecimal + 200)
+		}
+		h.Tempo = byte(p.Tempo * 2)
 	}
-	h.Tempo = byte(p.Tempo * 2)
 	return h
 }
 
@@ -113,61 +113,66 @@ var tempoRe = regexp.MustCompile("(\\d+).?(\\d+)?")
 var beatRe = regexp.MustCompile(`([x-]{4})\|`)
 
 func parseTrack(line string) (Track, error) {
-	// TODO(aoeu): rename "Id" to "ID"
 	id, line, err := parseTrackID(line)
 	if err != nil {
 		return Track{}, err
 	}
 	name, line := parseTrackName(line)
-	bars, line := parseBar(line, 4)
+	bars, line, err := parseBar(line, 4)
+	if err != nil {
+		return Track{}, err
+	}
 	return Track{Name: name, ID: id, Sequence: bars}, nil
 }
 
-func parseTrackID(line string) (id byte, subLine string, err error) {
+func parseTrackID(line string) (id byte, leftTrimmedLine string, err error) {
 	idMatch := idRe.FindStringSubmatch(line)
 	if len(idMatch) != 2 {
 		return 0, "", fmt.Errorf("No track ID parsed from line: '%v'", line)
 	}
 	n, err := strconv.Atoi(idMatch[1])
 	if err != nil {
-		return id, subLine, err
+		return id, leftTrimmedLine, err
 	}
-	subLine = strings.TrimLeft(line, idMatch[0])
-	return byte(n), subLine, nil
+	leftTrimmedLine = strings.TrimLeft(line, idMatch[0])
+	return byte(n), leftTrimmedLine, nil
 }
 
 var nameRe = regexp.MustCompile(`([\w-]+)\s+\|`)
 
-func parseTrackName(line string) (name, subLine string) {
+func parseTrackName(line string) (name, leftTrimmedLine string) {
 	s := strings.SplitN(line, "|", 2)
 	name = strings.TrimRight(s[0], " \t")
 	return name, s[1]
 }
 
-func parseBar(line string, numMeasures int) (bar []byte, subLine string) {
+func parseBar(line string, numMeasures int) (bar []byte, leftTrimmedLine string, err error) {
 	measureMatches := beatRe.FindAllStringSubmatch(line, numMeasures)
 	for i := 0; i < numMeasures; i++ {
 		measure := measureMatches[i][1]
-		bar = append(bar, parseBeats(measure)...)
+		beats, err := parseBeats(measure)
+		if err != nil {
+			return beats, leftTrimmedLine, err
+		}
+		bar = append(bar, beats...)
 		line = strings.TrimLeft(line, measureMatches[i][0])
 	}
-	return bar, line
+	return bar, line, nil
 }
 
-func parseBeats(measure string) []byte {
+func parseBeats(measure string) ([]byte, error) {
 	var beats []byte
 	for _, beat := range measure {
-		switch string(beat) {
+		switch beat {
 		case onBeat:
 			beats = append(beats, 1)
 		case offBeat:
 			beats = append(beats, 0)
 		default:
-			// TODO(aoeu): This doesn't seem correct.
-			beats = append(beats, 0)
+			return beats, fmt.Errorf("Unknown beat character '%v' encountered parsing measure '%v'", beat, measure)
 		}
 	}
-	return beats
+	return beats, nil
 }
 
 // A Track represents a named, identified drum sequence.
@@ -193,28 +198,28 @@ func (t Track) encode() []byte {
 }
 
 const (
-	separator string = "|"
-	// TODO(aoeu): Could these be runes instead of strings?
-	onBeat    string = "x"
-	offBeat   string = "-"
-	errorRune string = "?"
+	separator rune = '|'
+	onBeat    rune = 'x'
+	offBeat   rune = '-'
+	errorRune rune = '?'
 )
 
 func (t Track) String() string {
-	s := fmt.Sprintf("(%d) %s\t", t.ID, t.Name)
+	var b bytes.Buffer
+	b.WriteString(fmt.Sprintf("(%d) %s\t", t.ID, t.Name))
 	for i := 0; i < len(t.Sequence); i++ {
 		if i%4 == 0 {
-			s += separator
+			b.WriteString(string(separator))
 		}
 		switch t.Sequence[i] {
 		case 1:
-			s += onBeat
+			b.WriteString(string(onBeat))
 		case 0:
-			s += offBeat
+			b.WriteString(string(offBeat))
 		default:
-			s += errorRune
+			b.WriteString(string(errorRune))
 		}
 	}
-	s += separator
-	return s
+	b.WriteString(string(separator))
+	return b.String()
 }

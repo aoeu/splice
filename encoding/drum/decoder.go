@@ -26,13 +26,12 @@ func DecodeFile(path string) (*Pattern, error) {
 // A Decoder represents a drum pattern parser.
 // The parser assumes that input follows an undocumented specification.
 type Decoder struct {
-	// TODO(aoeu): provide a specfication and better documentation.
+	// TODO(aoeu): Provide a specfication and better documentation.
 	r io.Reader
 }
 
 // NewDecoder creates a new drum pattern decoder reading from r.
 func NewDecoder(r io.Reader) *Decoder {
-	// TODO: Get byte-at-a-time reader like in json.Decoder.switchToReader(...)?
 	return &Decoder{r}
 }
 
@@ -44,7 +43,6 @@ func (d *Decoder) Decode(p *Pattern) error {
 	}
 	p.HardwareVersion = string(bytes.Trim(h.HardwareVersion[:], "\x00"))
 	switch p.HardwareVersion {
-	// TODO(aoeu): Maybe a map of hardware versions and processing functions would help?
 	case "0.808-alpha":
 		p.Tempo = int(h.Tempo) / 2
 		if h.TempoDecimal != 0 {
@@ -52,9 +50,10 @@ func (d *Decoder) Decode(p *Pattern) error {
 			p.TempoDecimal = int(h.TempoDecimal) - 200
 		}
 	case "0.909":
-		// TODO(aoeu): Is there no byte this value can be pulled from?
+		// TODO(aoeu): Is there no byte this value can be derived from?
 		p.Tempo = 240
 	case "0.708-alpha":
+		// TODO(aoeu): Is there no byte this value can be derived from?
 		p.Tempo = 999
 	}
 	var err error
@@ -83,7 +82,7 @@ func readAllTracks(r io.Reader) (Tracks, error) {
 type Tracks []Track
 
 func (t Tracks) String() string {
-	s := ""
+	var s string
 	for _, drumPart := range t {
 		s += fmt.Sprintf("%v\n", drumPart)
 	}

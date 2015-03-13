@@ -71,7 +71,10 @@ func TestParseTrackName(t *testing.T) {
 func TestParseBar(t *testing.T) {
 	input := "--x-|--x-|x-x-|--x-|"
 	expected := []byte{0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0}
-	actual, s := parseBar(input, 4)
+	actual, s, err := parseBar(input, 4)
+	if err != nil {
+		t.Fatalf("Received unexpected error: %v", err)
+	}
 	for i, b := range actual {
 		if expected[i] != b {
 			t.Fatalf("Expected '%v' but received '%v' at %v",
@@ -86,7 +89,10 @@ func TestParseBar(t *testing.T) {
 func TestParseBeats(t *testing.T) {
 	measure := "--x-"
 	expected := []byte{0, 0, 1, 0}
-	actual := parseBeats(measure)
+	actual, err := parseBeats(measure)
+	if err != nil {
+		t.Fatalf("Received unexpected error: %v", err)
+	}
 	for i, b := range actual {
 		if expected[i] != b {
 			t.Fatalf("Expected '%v' but received '%v' at %v",

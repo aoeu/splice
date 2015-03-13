@@ -8,7 +8,6 @@ import (
 )
 
 func TestEncodeTrack(t *testing.T) {
-	// TODO(aoeu): Implement.
 	expected := []byte{2, 0, 0, 0,
 		4, 'c', 'l', 'a', 'p',
 		1, 0, 0, 0,
@@ -32,6 +31,7 @@ func TestEncodeTrack(t *testing.T) {
 }
 
 func TestEncode(t *testing.T) {
+	unknownIndexes := map[int]struct{}{13: {}, 45: {}, 46: {}, 49: {}}
 	tData := []struct {
 		path   string
 		backup string

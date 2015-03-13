@@ -6,10 +6,6 @@ import (
 	"os"
 )
 
-var unknownIndexes = map[int]struct{}{13: {}, 45: {}, 46: {}, 49: {}}
-
-// TODO: Implement method that encodes from pattern wrap it.
-
 // EncodeFile a text file backup in a custom binary data format.
 func EncodeFile(path string, pattern Pattern) error {
 	f, err := os.Open(path)
